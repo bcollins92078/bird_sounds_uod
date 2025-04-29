@@ -31,6 +31,11 @@ This python script trains CVAE models on the one species dataset specified in ca
      * flagging the most distant clusters from the nearest "big cluster" and then smallest first for discard until max discards are achieved
      * summing per sample discard recommendations across models and applying majority vote criterion to arrive at final discard recommendations
 
+- Parameters for trained models are saved in the <species>\analysis\models folder
+
+- various artifacts are saved in <species>\analysis\artifacts folder
+    * cvae model encodings files (encodings_clustered_cvae_a2_z<z_dim>_<timestamp>.csv)
+    * summary of models trained during run of cvae_clean.py (summary_cvae_a2_z<z_dim>_<timestamp>.csv)
 ## vade_clean.py 
 This python script trains vade models on the one species dataset specified in calling argument. It also trains CAE "pretraining" models in the process. 
 - The goal is to identify outliers by majority vote across the vade models and, since pretraining models are a byproduct, apply HAC to identify small, late merging clusters and majority vote across these as well. 
