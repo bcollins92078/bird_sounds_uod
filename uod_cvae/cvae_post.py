@@ -1,16 +1,17 @@
 """
 cvae_post.py
 
-This script post-processes discard_cvae_*.csv files from vae_clean.py
-to arrive at aggregated discard recommendations and record them in the sepecies _bvp.csv file:
-* tally per-sample discard recommendations across the CVAE models and apply majority vote 
+This script post-processes discard_cvae_*.csv files from cvae_clean.py
+to arrive at aggregated discard recommendations and record them in the species _bvp.csv file:
+* tally per-clip discard recommendations across the CVAE models and apply majority vote 
 to aggregate into a final recommendation 
-* record these per-sample recommendations in a species _bvp.csv file update
+* record these per-clip recommendations in a species _bvp.csv file update
 
 This is modeled after vade_post.py and specifically needed for species that VADE model training fails
 
 06-24-2025
-- minor changes to move execution path down one level in folder restructuring for github
+- minor changes to move execution path down one level in folder restructuring for github- minor changes to move execution path down one level as part of folder restructuring for phase 2 and 
+clean up header comments
 
 10-14-2024
 - renamed cvae_post.py (formerly vae_post.py) to be consistent with evolved naming convention
@@ -18,7 +19,7 @@ This is modeled after vade_post.py and specifically needed for species that VADE
 target as possible
 - added writing of discard tallies, majority voting results and adjusted vote results back to 
 input discards file
-- removed recording of per-sample recommendations in the species _bvp file (to be performed in 
+- removed recording of per-clip recommendations in the species _bvp file (to be performed in 
 a separate utility like train_recs.py)
 
 11-19-2024

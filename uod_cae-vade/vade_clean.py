@@ -2,10 +2,31 @@
 vade_clean.py
 
 Python script performs data UOD (i.e., cleaning) for the spectrogram dataset for one species using 
-Variational Deep Embedding (VaDE)
+convolutional autoencoder (CAE) and Variational Deep Embedding (VaDE) as follows:
+
+UOD using CAE:
+* Dimensionality reduction: CAE is trained on preprocessed spectrograms clips from bird sound recordings. 
+The parameters from model are also used as a starting point for VaDE model training (i.e., pre-training)
+* Hierarchical agglomerative clustering (HAC) is applied to the CAE latent space representation 
+of the clips to produce n_clusters
+* Discard candidates are determined at the cluster level with smallest clusters farthest away from 
+one of the biggest clusters recommended for discard first and proceeding to larger clusters until
+the specified max discard percentage is reached
+* The preceding process steps are repeated a specified number of times and each time the 
+resulting model parameters, latent space encodings, cluster assignments and discard decisions are saved
+* Final per clip discard decisions are made based on majority voting and these decisions
+are saved.
+
+UOD using VaDE:
+* Train VaDE model on a one-species preprocessed spectrograms clip dataset using parameters from a CAE model trained 
+on the same dataset as a starting point
+* For each clip in the dataset calculate the highest probability of membership across the clusters identified
+* Starting with lowest probability of cluster membership, designate clips to be candidate outliers until the total 
+number of such candidates reaches the specified max number of discards
 
 06-24-2025
-- minor changes to move execution path up 2 levels in folder restructuring for github
+- minor changes to move execution path down one level as part of folder restructuring for phase 2 and 
+clean up header comments
 
 02-10-2025
 - added max_discards as argument (only impacts pretraining models since this is performed in 
@@ -41,15 +62,15 @@ which is no longer being supported
 """
 import argparse
 
-import matplotlib.pyplot as plt
-from munkres import Munkres
-from sklearn.manifold import TSNE
+#import matplotlib.pyplot as plt
+#from munkres import Munkres
+#from sklearn.manifold import TSNE
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.cluster import homogeneity_score
 import torch
 import torch.nn.functional as F
 import torch.utils.data
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets, transforms
 
 from vade import AutoEncoderForPretrain, VaDE_CNN, lossfun, cluster_probs, _reparameterize

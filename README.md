@@ -1,48 +1,26 @@
 # UOD_bird_sounds (repository under construction)
-This repository contains python code developed in conjunction with the project reported on in http://arxiv.org/abs/2504.18650. This code preprocess bird sounds audio files downloaded from [Xeno-Canto](https://xeno-canto.org/) and perform deminsionality reduction and unsupervised outlier detection (UOD) on single species datasets. Three model types are implemented.
+This repository contains python code developed in conjunction with the project reported on in http://arxiv.org/abs/2504.18650. This code preprocesses bird sounds audio files downloaded from [Xeno-Canto](https://xeno-canto.org/) and perform dimensionality reduction and unsupervised outlier detection (UOD) on single species datasets. Three model types are implemented.
 * Convolutional Variational Autoencoder (CVAE) followed by Hierarchical Agglomerative Clustering (HAC)
 * Convolutional Autoencoder (CAE) followed by HAC
 * Variational Deep Embedding (VaDE) 
-In addition a number of utilities are included in this repository.
 
-## segment_audio.py  
-Python script segments each audio recording for a specified bird species.
+This work assumes that bird audio recordings have been downloaded from Xeno-Canto using the API wrapper documented at https://pypi.org/project/xeno-canto/
 
-Inputs:
-* bird species (common name used for folder names)
+The repository is organized in the following subfolders
+* /preprocessing subfolder contains scripts that perform the audio preprocessing 
+* /uod_cvae subfolder contains scripts that perform UOD on preprocessed audio by training CVAE models, applying HAC to the latent space of each model and then aggregating the outlier designations through majority voting.
+* /uod_cae-vade subfolder contains scripts that perform UOD on preprocessed audio by training VaDE models, designating outlier candidates based on minimum distance to a cluster and then aggregating the candidate designations through majority voting. Since a CAE model is also trained as pre-training for each VaDE model, HAC is also applied to the latent space of each of these CAE models and aggregated outlier designations are generated in a similar fashion as done for CVAE.
+* /utils subfolder contains some utility scripts that were found to be useful 
 
-Outputs:
-* <bird_species>_bvp.csv file containing metadata for the segmented audio, one segment per row, with the following columns
-    + src_file	
-    + segment_num	
-    + num_segments	
-    + time_offset	
-    + duration	
-    + sinr	
+Each of these subfolders contain a README.md file that provide some additional documentation specific the scripts contained there.
 
-## extract_feats.py
-This file contains a Python script which is executed per species to extract fixed length features (mel spectrograms) of specified resolution that are used for downstream processing (e.g., dimensionality reduction and clustering).
+All of the above scripts expect the data to be stored in a folder hierarchy as follows:
+* ../dataset
+* ../dataset/metadata
+* ../dataset/metadata/<bird_species> - Xeno-Canto recording file metadata is downloaded; <bird_species> is the English common name for a bird species for which audio recordings are downloaded
+* ../dataset/audio
+* ../dataset/audio/<bird_species> - where <bird_species> is the English common name for a bird species for which audio recordings are downloaded. Xeno-Canto utilities will create these folders as part of downloading.
+* ../dataset/audio/<bird_species>/analysis - some of the preprocessing artifacts are stored here
+* ../dataset/audio/<bird_species>/analysis/artifacts - UOD artifacts are generally stored here
+* ../dataset/audio/<bird_species>/analysis/models - model training artifacts are stored here
 
-## cvae_clean.py 
-This python script trains CVAE models on the one species dataset specified in calling argument.
-- Goal is to identify outliers by 
-     * dimensionality reduction by training set of CVAE models on species dataset 
-     * applying hierarchical agglomerative clustering (HAC) on latent space of each CVAE model
-     * flagging the most distant clusters from the nearest "big cluster" and then smallest first for discard until max discards are achieved
-     * summing per sample discard recommendations across models and applying majority vote criterion to arrive at final discard recommendations
-
-- Parameters for trained models are saved in the <species>\analysis\models folder
-
-- various artifacts are saved in <species>\analysis\artifacts folder
-    * cvae model encodings files (encodings_clustered_cvae_a2_z<z_dim>_<timestamp>.csv)
-    * summary of models trained during run of cvae_clean.py (summary_cvae_a2_z<z_dim>_<timestamp>.csv)
-## vade_clean.py 
-This python script trains vade models on the one species dataset specified in calling argument. It also trains CAE "pretraining" models in the process. 
-- The goal is to identify outliers by majority vote across the vade models and, since pretraining models are a byproduct, apply HAC to identify small, late merging clusters and majority vote across these as well. 
-- Parameters for trained models are saved in the <species>\analysis\models folder 
-     * pretraining models (pretrained_model_<timestamp>.pth)
-     * trained vade models (trained_model_<timestamp>.pth)
-
-- various artifacts are saved in <species>\analysis\artifacts folder
-     * vade model encodings files (vade_ec_c<n_clusters>_z<z_dim>_<timestamp>.csv)
-     * summary of models trained during run of vade_clean.py (summary_c<n_clusters>_z<z_dim>_<timestamp>.csv)
